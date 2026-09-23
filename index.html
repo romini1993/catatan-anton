@@ -576,7 +576,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxXyZd1pekC0tZRdwuY-aQzJb7veINYpp_sheoxMemO9sSrduj26QRhR4kHokR5iqJq/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbx-4oLgbBltmYD4jnx7UzMsBGMoSRSXL00qJc4VeX7uhP0N0mZQwCvQsit46gWQUOzC/exec"; 
         let currentKursIdr = 17550;
         let selectedNoForAction = null; // trade # yang sedang dipilih lewat long-press
         let selectedNoToDelete = null;
@@ -1280,23 +1280,40 @@
             ctx.closePath();
         }
 
-        // Ikon chart sederhana (3 bar naik) buat logo, ga pakai emoji supaya ga
-        // kena masalah metrik font emoji yang beda-beda tiap environment.
-        function drawChartIcon(ctx, x, y, size, color) {
-            const barW = size * 0.16;
-            const gap = size * 0.14;
-            const heights = [size * 0.32, size * 0.52, size * 0.76];
-            let bx = x + size * 0.18;
-            heights.forEach(h => {
-                const by = y + size - h - size * 0.18;
-                ctx.fillStyle = color;
-                drawRoundRectPath(ctx, bx, by, barW, h, barW * 0.3);
-                ctx.fill();
-                bx += barW + gap;
-            });
+        // Ikon garis tren naik + titik ujung, digambar manual (bukan emoji)
+        // biar warnanya bisa dikontrol solid putih, ga nyampur/samar sama
+        // warna latar kotak logo.
+        function drawLogoIcon(ctx, x, y, size, color) {
+            const pad = size * 0.26;
+            const w = size - pad * 2;
+            const h = size - pad * 2;
+            const x0 = x + pad, y0 = y + pad;
+            const pts = [
+                [x0, y0 + h * 0.82],
+                [x0 + w * 0.32, y0 + h * 0.5],
+                [x0 + w * 0.58, y0 + h * 0.68],
+                [x0 + w, y0]
+            ];
+            ctx.strokeStyle = color;
+            ctx.lineWidth = Math.max(2, size * 0.09);
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            pts.forEach((p, i) => i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]));
+            ctx.stroke();
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(pts[pts.length - 1][0], pts[pts.length - 1][1], Math.max(3, size * 0.07), 0, Math.PI * 2);
+            ctx.fill();
         }
 
         function drawCardBackground(ctx, w, h) {
+            // Fill dulu SELURUH canvas pake warna gelap solid -> biar pojok-pojok
+            // di luar area rounded-rect (yang secara teknis ga ke-fill sama
+            // gradient rounded di bawah) ga transparan/muncul putih pas dibuka.
+            ctx.fillStyle = '#06070b';
+            ctx.fillRect(0, 0, w, h);
+
             const grad = ctx.createLinearGradient(0, 0, w, h);
             grad.addColorStop(0, '#14110a');
             grad.addColorStop(0.65, '#06070b');
@@ -1314,9 +1331,6 @@
             drawRoundRectPath(ctx, x, y, w, h, 14);
             ctx.fillStyle = 'rgba(255,255,255,0.05)';
             ctx.fill();
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -1360,26 +1374,26 @@
             let cy = PAD;
             const cx = PAD;
 
-            const logoSize = 64;
-            drawRoundRectPath(ctx, cx, cy, logoSize, logoSize, 16);
+            const logoSize = 48;
+            drawRoundRectPath(ctx, cx, cy, logoSize, logoSize, 14);
             ctx.fillStyle = 'rgba(217,164,65,0.12)';
             ctx.fill();
             ctx.strokeStyle = 'rgba(217,164,65,0.35)';
             ctx.lineWidth = 1;
             ctx.stroke();
-            drawChartIcon(ctx, cx, cy, logoSize, '#f0bd63');
+            drawLogoIcon(ctx, cx, cy, logoSize, '#ffffff');
 
-            const textX = cx + logoSize + 16;
+            const textX = cx + logoSize + 14;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = '#ffffff';
-            ctx.font = `700 24px ${CARD_FONT}`;
-            ctx.fillText('Trading Log', textX, cy + 22);
+            ctx.font = `700 22px ${CARD_FONT}`;
+            ctx.fillText('Trading Log', textX, cy + logoSize * 0.36);
             ctx.fillStyle = '#565e70';
-            ctx.font = `400 16px ${CARD_FONT}`;
-            ctx.fillText(dateText, textX, cy + 48);
+            ctx.font = `400 15px ${CARD_FONT}`;
+            ctx.fillText(dateText, textX, cy + logoSize * 0.76);
 
-            cy += logoSize + 48;
+            cy += logoSize + 40;
 
             ctx.textBaseline = 'top';
             ctx.fillStyle = '#565e70';
@@ -1473,20 +1487,20 @@
             let cy = PAD;
             const cx = PAD;
 
-            const logoSize = 56;
-            drawRoundRectPath(ctx, cx, cy, logoSize, logoSize, 14);
+            const logoSize = 42;
+            drawRoundRectPath(ctx, cx, cy, logoSize, logoSize, 12);
             ctx.fillStyle = 'rgba(217,164,65,0.12)';
             ctx.fill();
             ctx.strokeStyle = 'rgba(217,164,65,0.35)';
             ctx.lineWidth = 1;
             ctx.stroke();
-            drawChartIcon(ctx, cx, cy, logoSize, '#f0bd63');
+            drawLogoIcon(ctx, cx, cy, logoSize, '#ffffff');
 
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             ctx.fillStyle = '#ffffff';
-            ctx.font = `700 22px ${CARD_FONT}`;
-            ctx.fillText('Trading Log', cx + logoSize + 16, cy + logoSize / 2);
+            ctx.font = `700 20px ${CARD_FONT}`;
+            ctx.fillText('Trading Log', cx + logoSize + 14, cy + logoSize / 2);
 
             // Badge PROFIT/LOSS pojok kanan atas, tinggi & lebar dihitung dari
             // ukuran teksnya sendiri, di-center pakai textBaseline 'middle'.
