@@ -527,8 +527,8 @@
                         <div id="resultCardWinRate" class="text-sm font-bold text-white">–</div>
                     </div>
                     <div class="text-center p-2.5 rounded-xl bg-white/5 border border-white/10">
-                        <div class="text-[9px] text-[var(--text-faint)] mb-1">USDT/IDR</div>
-                        <div id="resultCardKurs" class="text-sm font-bold text-white">–</div>
+                        <div class="text-[9px] text-[var(--text-faint)] mb-1">Avg Harian</div>
+                        <div id="resultCardAvgDaily" class="text-sm font-bold text-white">–</div>
                     </div>
                 </div>
             </div>
@@ -1243,7 +1243,11 @@
             document.getElementById('resultCardTotalIdr').textContent = formatRupiah(total * currentKursIdr);
             document.getElementById('resultCardCount').textContent = res.totalTrades || 0;
             document.getElementById('resultCardWinRate').textContent = `${res.winRate || 0}%`;
-            document.getElementById('resultCardKurs').textContent = formatRupiah(currentKursIdr);
+
+            const avgDaily = lastQuickStats.daily || 0;
+            const avgDailyEl = document.getElementById('resultCardAvgDaily');
+            avgDailyEl.textContent = `${avgDaily >= 0 ? '+' : ''}${avgDaily.toFixed(2)}`;
+            avgDailyEl.className = `text-sm font-bold ${avgDaily >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
 
             const now = new Date();
             document.getElementById('resultCardDate').textContent = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
